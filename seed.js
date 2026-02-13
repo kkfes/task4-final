@@ -35,7 +35,7 @@ async function main(){
 
   await store.workout.insertMany(workouts);
   const pw = await bcrypt.hash('password123', 10);
-  await store.user.create({ username: 'admin', email: 'admin@example.com', passwordHash: pw });
+  await store.user.create({ username: 'admin', email: 'admin@example.com', passwordHash: pw, role: 'admin' });
   console.log('Seeded 20 workouts and admin user (username: admin, password: password123)');
   process.exit(0);
 }

@@ -68,9 +68,14 @@ if (MONGO_URI) {
 app.use(session(sessionOptions));
 
 app.use((req, res, next) => {
-  res.locals.currentUser = req.session.userId || null;
+  // expose current user info to views (id + role) for UI decisions
+  res.locals.currentUser = req.session.userId ? { id: req.session.userId, role: req.session.role || 'user' } : null;
   next();
 });
+
+// Admin UI routes
+const adminRoutes = require('./routes/admin');
+app.use('/admin', adminRoutes);
 
 app.use('/auth', authRoutes);
 app.use('/api', apiRoutes);

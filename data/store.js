@@ -40,12 +40,24 @@ const store = {
     async findOne(query){
       if (useMongo) return UserModel.findOne(query).exec();
       const db = store.db; await db.read();
-      return db.data.users.find(u => (query.username && u.username === query.username) || (query.email && u.email === query.email)) || null;
+      return db.data.users.find(u =>
+        (query._id && u._id === query._id) ||
+        (query.username && u.username === query.username) ||
+        (query.email && u.email === query.email)
+      ) || null;
+    },
+    async findAll(){
+      if (useMongo) return UserModel.find().exec();
+      const db = store.db; await db.read(); return db.data.users.slice();
     },
     async create(doc){
       if (useMongo) return UserModel.create(doc);
       const db = store.db; await db.read();
       const id = ++db.data.lastId.users; const user = Object.assign({ _id: String(id) }, doc); db.data.users.push(user); await db.write(); return user;
+    },
+    async findByIdAndUpdate(id, updates){
+      if (useMongo) return UserModel.findByIdAndUpdate(id, updates, { new: true }).exec();
+      const db = store.db; await db.read(); const idx = db.data.users.findIndex(u => u._id === id); if (idx === -1) return null; db.data.users[idx] = Object.assign({}, db.data.users[idx], updates); await db.write(); return db.data.users[idx];
     },
     async deleteMany(){
       if (useMongo) return UserModel.deleteMany();

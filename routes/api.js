@@ -1,6 +1,6 @@
 const express = require('express');
 const validator = require('validator');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireAdmin } = require('../middleware/auth');
 const store = require('../data/store');
 const router = express.Router();
 
@@ -62,3 +62,38 @@ router.delete('/workouts/:id', requireAuth, async (req, res) => {
 });
 
 module.exports = router;
+
+// Admin-only routes
+router.delete('/admin/workouts', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    await store.workout.deleteMany();
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+router.get('/admin/users', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const users = await store.user.findAll();
+    res.json(users.map(u => ({ _id: u._id, username: u.username, email: u.email, role: u.role })));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+router.post('/admin/users/:id/role', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { role } = req.body;
+    if (!['user','admin'].includes(role)) return res.status(400).json({ error: 'Invalid role' });
+    const updated = await store.user.findByIdAndUpdate(id, { role });
+    if (!updated) return res.status(404).json({ error: 'User not found' });
+    res.json({ _id: updated._id, username: updated.username, email: updated.email, role: updated.role });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});

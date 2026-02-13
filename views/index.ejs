@@ -29,6 +29,9 @@
         <div>
           <% if (currentUser) { %>
             <a class="button" href="/create">New Workout</a>
+            <% if (currentUser.role === 'admin') { %>
+              <a class="button" href="/admin">Admin</a>
+            <% } %>
           <% } %>
         </div>
       </div>

@@ -16,6 +16,7 @@ router.post('/login', async (req, res) => {
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) return res.status(401).render('login', { error: 'Invalid credentials' });
     req.session.userId = user._id.toString();
+    req.session.role = user.role || 'user';
     res.redirect('/');
   } catch (err) {
     console.error(err);
@@ -41,8 +42,10 @@ router.post('/signup', async (req, res) => {
     const exists = await store.user.findOne({ username }) || await store.user.findOne({ email });
     if (exists) return res.status(400).render('signup', { error: 'Invalid input' });
     const hash = await bcrypt.hash(password, 10);
-    const user = await store.user.create({ username, email, passwordHash: hash });
+    // New users get role 'user' by default
+    const user = await store.user.create({ username, email, passwordHash: hash, role: 'user' });
     req.session.userId = user._id.toString();
+    req.session.role = user.role || 'user';
     res.redirect('/');
   } catch (err) {
     console.error(err);
