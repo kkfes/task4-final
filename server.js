@@ -12,6 +12,10 @@ const apiRoutes = require('./routes/api');
 
 const app = express();
 
+// When running behind a proxy (e.g. Render), trust the first proxy
+// so that secure cookies can be set when NODE_ENV=production.
+if (process.env.NODE_ENV === 'production') app.set('trust proxy', 1);
+
 let MONGO_URI = process.env.MONGO_URI || '';
 
 function isLocalhostUri(uri){
